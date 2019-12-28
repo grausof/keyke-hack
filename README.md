@@ -3,12 +3,15 @@ This hack includes :
 - Telnet server activated
 - FTP server activated
 
+for KEYKE camera 1080p.
+![KEYKE Camera](camera.jpg )
+
 # Getting Started
 ! MicroSD card must stay in the camera for this hack to function !
 
 ## Prepare the microSD Card
 - Clone this repository onto computer: git clone https://github.com/grausof/keyke-hack
-- Format a microSD card in FAT32 format and copy the content inside sd folder onto root of microSD card.
+- Format a microSD card in FAT32 format and copy the test folder inside sd folder onto root of microSD card. (there must be only one test folder on the sd card)
 - In the root of microSD will contain a folder named test.
 
 ## Starting your Camera
