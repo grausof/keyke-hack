@@ -18,8 +18,6 @@
  * Scans the buffer and sends h264 frames to stdout.
  */
 
-//USAGE ./h264grabber HIGH/LOW --debug
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -34,7 +32,7 @@
 #define RESOLUTION_LOW 360
 #define RESOLUTION_HIGH 1080
 
-unsigned char SPS[] = { 0x00, 0x00, 0x00, 0x01 };
+unsigned char SPS[] = { 0x00, 0x00, 0x00, 0x01, 0x67 };
 
 // Returns the 1st process id corresponding to pname
 int pidof(const char *pname)
@@ -135,28 +133,61 @@ int main(int argc, char **argv)
     unsigned char *addr;
     char filLenFile[1024];
     char timeStampFile[1024];
-    //unsigned char buffer[262144];
-    unsigned char *buffer = malloc(sizeof(unsigned char)*262144);
+    unsigned char *buffer;
     int len;
     unsigned int time, oldTime = 0;
     int stream_started = 0;
-    
 
-    resolution = RESOLUTION_LOW;
 
-    if (argc > 1 && strcmp(argv[1], "HIGH") == 0) 
-    {
-        resolution == RESOLUTION_HIGH;
+    while (1) {
+        static struct option long_options[] =
+        {
+            {"resolution",  required_argument, 0, 'r'},
+            {"debug",  no_argument, 0, 'd'},
+            {"help",  no_argument, 0, 'h'},
+            {0, 0, 0, 0}
+        };
+        /* getopt_long stores the option index here. */
+        int option_index = 0;
+
+        c = getopt_long (argc, argv, "r:dh",
+                         long_options, &option_index);
+
+        /* Detect the end of the options. */
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 'r':
+            if (strcasecmp("low", optarg) == 0) {
+                resolution = RESOLUTION_LOW;
+            } else if (strcasecmp("high", optarg) == 0) {
+                resolution = RESOLUTION_HIGH;
+            }
+            break;
+
+        case 'd':
+            fprintf (stderr, "debug on\n");
+            debug = 1;
+            break;
+
+        case 'h':
+            print_usage(argv[0]);
+            return -1;
+            break;
+
+        case '?':
+            /* getopt_long already printed an error message. */
+            break;
+
+        default:
+            print_usage(argv[0]);
+            return -1;
+        }
     }
 
-    if (argc > 2 && strcmp(argv[2], "--debug") == 0) 
-    {
-        debug=1;
-    }
-    
-
-    if (debug) fprintf (stderr, "WELCOME\n");
     if (debug) fprintf(stderr, "Resolution: %d\n", resolution);
+
     if (resolution == RESOLUTION_LOW) {
         fPtr = fopen("/proc/mstar/OMX/VMFE1/ENCODER_INFO/OBUF_pBuffer", "r");
         fLen = fopen("/proc/mstar/OMX/VMFE1/ENCODER_INFO/OBUF_nAllocLen", "r");
@@ -168,22 +199,26 @@ int main(int argc, char **argv)
     fclose(fPtr);
     fscanf(fLen, "%d", &size);
     fclose(fLen);
+
     ipAddr = rmm_virt2phys(ivAddr);
 
     if (debug) fprintf(stderr, "vaddr: 0x%08x - paddr: 0x%08x - size: %u\n", ivAddr, ipAddr, size);
 
+    // open /dev/mem and error checking
     fMem = open(memDevice, O_RDONLY); // | O_SYNC);
     if (fMem < 0) {
         fprintf(stderr, "Failed to open the /dev/mem\n");
         return -1;
     }
 
+    // mmap() the opened /dev/mem
     addr = (unsigned char *) (mmap(NULL, size, PROT_READ, MAP_SHARED, fMem, ipAddr));
     if (addr == MAP_FAILED) {
         fprintf(stderr, "Failed to map memory\n");
         return -1;
     }
 
+    // close the character device
     close(fMem);
 
     if (resolution == RESOLUTION_LOW) {
@@ -194,10 +229,7 @@ int main(int argc, char **argv)
         sprintf(timeStampFile, "/proc/mstar/OMX/VMFE0/ENCODER_INFO/OBUF_nTimeStamp");
     }
 
-    if (debug) fprintf (stderr, "Read memory OK\n");
-
     while(!stream_started) {
-        if (debug) fprintf (stderr, "Stream not started\n");
         fTime = fopen(timeStampFile, "r");
         fscanf(fTime, "%u", &time);
         fclose(fTime);
@@ -210,37 +242,15 @@ int main(int argc, char **argv)
         fLen = fopen(filLenFile, "r");
         fscanf(fLen, "%d", &len);
         fclose(fLen);
-        
-        //unsigned char buffer[262144] = {};
-
-
-        memcpy(buffer, addr, len); //segmentation fault
-
-        //printf("The size of buffer is %lu\n", (unsigned long)sizeof(buffer));
-        //printf("The size of addr is %lu\n", (unsigned long)sizeof(addr));
-        //printf("The size of SPS is %lu\n", (unsigned long)sizeof(SPS));
-        //printf("The len is %d\n", len);
-
-        /*
-        printf("hashedChars: ");
-        int i = 0;
-        for (i = 0; i < 32; i++){
-            printf("%x", buffer[i]);
-        }
-        printf("\n");
-        */
-
-
-
-        int res = memcmp(SPS, buffer, sizeof(SPS));
-        if (res == 0) {
+	buffer = (unsigned char *) malloc(len);
+        memcpy(buffer, addr, len);
+        if (memcmp(SPS, buffer, sizeof(SPS)) == 0) {
             oldTime = time;
-            if (!debug) {
-                fwrite(buffer, 1, len, stdout);
-            }
+            fwrite(buffer, 1, len, stdout);
             stream_started = 1;
         }
     }
+
     while(1) {
         fTime = fopen(timeStampFile, "r");
         fscanf(fTime, "%u", &time);
@@ -258,16 +268,11 @@ int main(int argc, char **argv)
         fscanf(fLen, "%d", &len);
         fclose(fLen);
         if (debug) fprintf(stderr, "time: %u - len: %d\n", time, len);
-        
+	buffer = (unsigned char *) malloc(len);
         memcpy(buffer, addr, len);
         oldTime = time;
-        
-        if (!debug) {
-                fwrite(buffer, 1, len, stdout);
-        }
-        
-       
+        fwrite(buffer, 1, len, stdout);
     }
-     munmap(addr, size);
- 
+
+    munmap(addr, size);
 }
