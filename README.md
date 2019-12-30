@@ -3,7 +3,8 @@ This hack includes :
 - Telnet server activated
 - FTP server activated
 
-for KEYKE camera 1080p.
+for KEYKE camera 1080p based on MStar Infinity3 chipset. 
+
 ![KEYKE Camera](camera.jpg )
 
 # Getting Started
@@ -36,3 +37,12 @@ Default user is root, without password. You can change the password with this co
 The FTP server is on port 21.
 No authentication is needed, you can login as anonymous.
 
+
+## Acknowledgments
+Special thanks to the following people.
+- @TheCrypt0 - [https://github.com/TheCrypt0/yi-hack-v4](https://github.com/TheCrypt0/yi-hack-v4)
+- @xmflsct - [https://github.com/xmflsct/yi-hack-1080p](https://github.com/xmflsct/yi-hack-1080p)
+- All the people who worked on the previous projects "yi-hack".
+
+### DISCLAIMER
+### I AM NOT RESPONSIBLE FOR ANY USE OR DAMAGE THIS SOFTWARE MAY CAUSE. THIS IS INTENDED FOR EDUCATIONAL PURPOSES ONLY. USE AT YOUR OWN RISK.
