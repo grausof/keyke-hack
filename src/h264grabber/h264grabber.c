@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     char filLenFile[1024];
     char timeStampFile[1024];
     unsigned char *buffer;
-    //buffer = (unsigned char *) malloc(262144);
+    buffer = (unsigned char *) malloc(262144);
     int len;
     unsigned int time, oldTime = 0;
     int stream_started = 0;
@@ -244,14 +244,14 @@ int main(int argc, char **argv)
         fscanf(fLen, "%d", &len);
         fclose(fLen);
 
-        buffer = (unsigned char *) malloc(len);
+        //buffer = (unsigned char *) malloc(len);
         memcpy(buffer, addr, len);
         if (memcmp(SPS, buffer, sizeof(SPS)) == 0) {
             oldTime = time;
             fwrite(buffer, 1, len, stdout);
             stream_started = 1;
         }
-        free(buffer); 
+        //free(buffer); 
     }
 
     while(1) {
@@ -272,11 +272,11 @@ int main(int argc, char **argv)
         fclose(fLen);
         if (debug) fprintf(stderr, "time: %u - len: %d\n", time, len);
 
-        buffer = (unsigned char *) malloc(len);
+        //buffer = (unsigned char *) malloc(len);
         memcpy(buffer, addr, len);
         oldTime = time;
         fwrite(buffer, 1, len, stdout);
-        free(buffer); 
+        //free(buffer); 
     }
 
     munmap(addr, size);
