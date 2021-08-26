@@ -17,3 +17,4 @@ export AR=${CROSSPREFIX}ar
 make clean
 make || exit 1
 cp ./h264grabber ../../bin/
+arm-linux-gnueabihf-strip ../../../bin/h264grabber

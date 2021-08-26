@@ -50,6 +50,7 @@ TESTPROGS_DIR = testProgs
 MEDIA_SERVER_DIR = mediaServer
 
 PROXY_SERVER_DIR = proxyServer
+.PHONY: all livemedia clean
 
 all: livemedia rRTSPServer
 

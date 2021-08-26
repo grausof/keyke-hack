@@ -156,6 +156,8 @@ echo "--------------------------insmod end--------------------------"
 	ifconfig wlan0 up
 	ethmac=d2:`ifconfig wlan0 |grep HWaddr|cut -d' ' -f10|cut -d: -f2-`
 	ifconfig eth0 hw ether $ethmac
+	#CUSTOM MAC ETH0
+	#ifconfig eth0 hw ether 08:00:00:00:00:01
 	ifconfig eth0 up
 
 	#echo "/tmp/sd/core.%e.%p" > /proc/sys/kernel/core_pattern
@@ -185,3 +187,9 @@ echo "--------------------------insmod end--------------------------"
 	/home/app/localbin/busybox telnetd &
 	#start ftp
 	/home/app/localbin/busybox tcpsvd -vE 0.0.0.0 21 /home/app/localbin/busybox ftpd -w / &
+
+	#Start RTSP and ONVIF on port 80
+	#cd /home/app/localbin
+	#./startRTSP.sh &
+	#./startONVIF.sh &
+	#cd /home/app
