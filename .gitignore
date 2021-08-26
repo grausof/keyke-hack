@@ -1,0 +1,6 @@
+*.DS_Store
+*.o
+.idea
+src/h264grabber/h264grabber/h264grabber
+src/ipc_cmd/ipc_cmd/ipc_cmd
+src/snapshot/snapshot/imggrabber
